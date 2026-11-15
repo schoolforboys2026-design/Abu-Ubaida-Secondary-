@@ -1520,6 +1520,28 @@ html[data-motion="off"] #btecMap .gv.has{animation:none}
 #certLb .lb-n{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:#111;font-size:1.4rem;cursor:pointer;font-weight:800}
 #certLb .lb-p{inset-inline-start:10px}#certLb .lb-x{inset-inline-end:10px}
 </style>
+
+<style>
+/* ===== تنسيق فيديو معرض المدرسة ===== */
+.video-container{
+  position:relative;
+  width:100%;
+  max-width:850px;
+  aspect-ratio:16/9;
+  margin:25px auto;
+  border-radius:18px;
+  overflow:hidden;
+  background:#000;
+  box-shadow:0 8px 25px rgba(0,0,0,.22);
+}
+.video-container iframe{
+  display:block;
+  width:100%;
+  height:100%;
+  border:0;
+}
+</style>
+
 </head>
 <body>
 <div id="intro" role="presentation">
@@ -1726,7 +1748,15 @@ html[data-motion="off"] #btecMap .gv.has{animation:none}
  <h3 class="ab-sub">👨‍🏫 الكادر التعليمي</h3>
  <div id="staffBox"></div>
  <h3 class="ab-sub" id="galH">📸 معرض المدرسة</h3>
- <figure class="phv reveal"><div class="phv-box"><video controls playsinline preload="none" src="school-bg.mp4"></video></div><figcaption>🎬 فيديو من داخل المدرسة</figcaption></figure>
+
+<div class="video-container">
+    <iframe
+        src="https://www.youtube.com/embed/lBCLAWp29Q8"
+        title="فيديو المدرسة"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+    </iframe>
+</div>
  <div class="bggal-f" role="group" aria-label="تصنيف الصور"></div>
  <div class="bggal"></div>
  <div class="rights-note"><span aria-hidden="true">📸</span><div><b>حقوق الملكية الفكرية وإذن النشر:</b> حصلنا على حقوق الملكية الفكرية للصور والمحتوى الخاص بالمدرسة المنشور في هذا الموقع، وأخذنا إذن جميع الأشخاص الظاهرين فيها بنشرها. لطلب حذف صورة تواصل مع الدعم الفني.</div></div>
