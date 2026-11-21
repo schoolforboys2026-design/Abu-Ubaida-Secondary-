@@ -786,6 +786,36 @@ button.subj{text-align:start;font:inherit;color:inherit}
 #btecGuide .bgbig i{display:block;height:100%}
 #btecGuide .bgsr{margin:10px 0}
 #btecGuide .bgsr button{display:block;width:100%;text-align:right;margin:6px 0;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer}
+/* ===== حاسبة معدل التخصص (من 35) ===== */
+#btecGuide .cs{--cU:#c62828;--cP:#b45309;--cM:#0f766e;--cD:#3949ab;--cOn:#fff}
+[data-theme="dark"] #btecGuide .cs{--cU:#ff8a8a;--cP:#fbbf24;--cM:#5eead4;--cD:#a5b4fc;--cOn:#0d1620}
+#btecGuide .cs-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#btecGuide .cs-top h3{margin:0;font-size:1.15rem}
+#btecGuide .cs-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.92rem;margin:4px 0 12px}
+#btecGuide .cs-sub b{color:var(--text)}
+#btecGuide .cs-pick{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+@media(max-width:560px){#btecGuide .cs-pick{grid-template-columns:1fr}}
+#btecGuide .cs-pick button{display:grid;gap:4px;text-align:right;padding:20px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer;transition:border-color .2s,transform .2s}
+#btecGuide .cs-pick button:hover{border-color:var(--primary);transform:translateY(-2px)}
+#btecGuide .cs-pick b{font-size:1.2rem}
+#btecGuide .cs-pick small{color:var(--muted)}
+#btecGuide .cu{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 16px;margin-bottom:12px}
+#btecGuide .cu .cut{font-weight:800;line-height:1.6;margin-bottom:6px}
+#btecGuide .cu .chr{display:inline-block;padding:2px 12px;border-radius:99px;background:var(--soft);border:1px solid var(--line);font-size:.82rem;font-weight:700;margin-bottom:12px}
+#btecGuide .cb4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#btecGuide .cb{--c:var(--cU);height:46px;border-radius:12px;font-family:inherit;font-size:1.05rem;font-weight:800;cursor:pointer;color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--card));border:1.5px solid color-mix(in srgb,var(--c) 38%,var(--card));transition:background .15s,color .15s,transform .1s}
+#btecGuide .cb.P{--c:var(--cP)}#btecGuide .cb.M{--c:var(--cM)}#btecGuide .cb.D{--c:var(--cD)}
+#btecGuide .cb:active{transform:scale(.96)}
+#btecGuide .cb.on{background:var(--c);color:var(--cOn);border-color:var(--c)}
+#btecGuide .cb:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#btecGuide .csres{position:sticky;bottom:10px;z-index:5;margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--card);border:2px solid var(--primary);box-shadow:0 14px 34px -14px rgba(0,0,0,.35)}
+#btecGuide .cs-big{display:flex;align-items:baseline;gap:8px}
+#btecGuide .cs-big b{font-size:2.2rem;line-height:1.1;color:var(--primary)}
+#btecGuide .cs-big span{font-size:1.1rem;font-weight:800;color:var(--muted)}
+#btecGuide .cs-big em{margin-inline-start:auto;font-style:normal;font-size:.85rem;font-weight:700;color:var(--muted)}
+#btecGuide .csres .note{margin:6px 0 0}
+#btecGuide .cs-leg{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#btecGuide .cs-leg span{font-size:.82rem;color:var(--muted)}
 #subjects:not(.pgoff){display:block}
 #subjectsLink{display:none!important}
 .sxg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
@@ -5084,7 +5114,37 @@ html[data-a11y-hc] #aiFab .ai-name{background:#000!important;color:#ffe600!impor
  const tg=a=>(a||[]).map(x=>`<span class="bgt s">${x}</span>`).join(" ");
  const li=a=>a.map(x=>`<li>${x}</li>`).join("");
 
- const PANES={
+ /* ===== حاسبة معدل التخصص: الحالة والحسابات ===== */
+const CP={U:0,P:60,M:80,D:100};            /* نسبة كل تقدير من 100 (تقديرية، عدّلها هنا) */
+const CMAX=35;                              /* وزن التخصص لكل صف */
+const CH={t:{11:[120,60,60,60,60]}};        /* ساعات الوحدات: أي وحدة غير مذكورة = 60 ساعة */
+const CGN={11:"أول ثانوي",12:"ثاني ثانوي"};
+const CGS={11:"الحادي عشر",12:"الثاني عشر"};
+const hrs=(sid,g,n)=>{const a=(CH[sid]&&CH[sid][g])||[];return Array.from({length:n},(_,k)=>a[k]||60)};
+let cs=(()=>{try{return JSON.parse(localStorage.getItem("bgcalc")||"{}")||{}}catch(e){return{}}})();
+cs.spec=cs.spec||null;cs.gr=cs.gr||null;cs.sel=cs.sel||{};
+const csSave=()=>{try{localStorage.setItem("bgcalc",JSON.stringify(cs))}catch(e){}};
+function csStat(sid,g){
+ const sp=S.find(x=>x.id===sid),u=(sp&&sp.g[g])||[],h=hrs(sid,g,u.length),sel=cs.sel[sid+g]||[];
+ let tot=0,H=0,w=0,done=0;
+ u.forEach((_,k)=>{tot+=h[k];const v=sel[k];if(v){done++;H+=h[k];w+=h[k]*CP[v]}});
+ const avg=H?w/H:0;
+ return {n:u.length,done,tot,avg,out:avg/100*CMAX,full:u.length>0&&done===u.length,h};
+}
+function csResHTML(){
+ const st=csStat(cs.spec,cs.gr);
+ if(!st.done)return `<div class="cs-big"><b>— —</b><span>/ ${CMAX}</span></div><p class="note">اختر تقدير كل مادة لتظهر علامتك.</p>`;
+ const other=cs.gr===11?12:11,so=csStat(cs.spec,other);
+ const both=st.full&&so.full?`<p class="note"><b>مجموع الصفين:</b> ${(st.out+so.out).toFixed(2)} / ${CMAX*2}</p>`:"";
+ return `<div class="cs-big"><b>${st.out.toFixed(2)}</b><span>/ ${CMAX}</span><em>${st.avg.toFixed(1)}%</em></div>
+ <div class="bgbar"><i style="width:${st.out/CMAX*100}%"></i></div>
+ <p class="note">${st.full?"محسوبة على كل المواد":"تقدير مبدئي: محسوب على "+st.done+" من "+st.n+" مواد"} · ${CGN[cs.gr]}</p>${both}`;
+}
+function csUpdate(){
+ const r=$("csRes"),c=$("csCnt");if(!r)return;
+ r.innerHTML=csResHTML();const st=csStat(cs.spec,cs.gr);if(c)c.textContent=st.done+"/"+st.n+" مادة";
+}
+const PANES={
   specs(){
    let h=`<input id="bgQ" placeholder="🔍 ابحث عن تخصص أو وحدة أو برنامج (مثل Excel)..." aria-label="بحث في التخصصات والوحدات"><div class="bgsr" id="bgSR"></div>`;
    if(!spec){
@@ -5152,13 +5212,29 @@ html[data-a11y-hc] #aiFab .ai-name{background:#000!important;color:#ffe600!impor
   tips(){return `<div class="card"><ul class="skills">${li(TIPS)}</ul></div>
    <div class="card" style="margin-top:14px"><b>📚 مواد من معلميك</b><p class="gdesc" style="margin:6px 0 0">استفد من ملفات الشرح والأمثلة التي ينشرها معلم المادة، ودوّن مصدر كل ملف والجزء الذي استخدمته في واجبك.</p></div>`},
   tpl(){return `<div class="card"><pre id="bgTpl">${TPL}</pre><button type="button" class="btn" data-act="cp" style="margin-top:14px">📋 نسخ القالب</button> <span class="note" id="bgCpm"></span></div>`},
-  calc(){return `<div class="card"><p class="gdesc">اكتب عدد وحداتك حسب التقدير الذي حصلت عليه.</p><div class="bgrid">
-   <label class="bgl">وحدات Pass<input id="bgcp" type="number" min="0" value="0" inputmode="numeric"></label>
-   <label class="bgl">وحدات Merit<input id="bgcm" type="number" min="0" value="0" inputmode="numeric"></label>
-   <label class="bgl">وحدات Distinction<input id="bgcd" type="number" min="0" value="0" inputmode="numeric"></label>
-   <label class="bgl">وحدات NS<input id="bgcn" type="number" min="0" value="0" inputmode="numeric"></label></div>
-   <button type="button" class="btn" data-act="calc" style="margin-top:14px">احسب</button><div class="bgout" id="bgcr" aria-live="polite">أدخل عدد الوحدات</div>
-   <p class="note">للتقدير فقط، والتقدير الرسمي تحدده الوزارة وPearson.</p></div>`},
+  calc(){
+   if(!cs.spec||!S.find(x=>x.id===cs.spec)){
+    return `<div class="cs"><div class="card"><h3 style="margin:0 0 4px">🧮 حاسبة معدل التخصص</h3><p class="gdesc">تحسب علامة مواد التخصص من ${CMAX} لكل صف. اختر تخصصك أولًا.</p></div>
+    <div class="bgrid" style="margin-top:12px">${S.map(s=>`<button type="button" class="bgsp" data-cs="${s.id}"><span class="em">${s.i}</span><span><b>${s.n}</b><small>${s.d}</small></span></button>`).join("")}</div></div>`;
+   }
+   const sp=S.find(x=>x.id===cs.spec);
+   if(!cs.gr){
+    return `<div class="cs"><div class="cs-top"><h3>${sp.i} ${sp.n}</h3><button type="button" class="btn" data-cback="spec">تغيير التخصص</button></div>
+    <p class="gdesc">في أي صف أنت؟</p>
+    <div class="cs-pick">${[11,12].map(g=>{const st=csStat(sp.id,g);return `<button type="button" data-cg="${g}"><b>${CGN[g]}</b><small>الصف ${CGS[g]} · ${st.n} مواد · ${st.tot} ساعة</small></button>`}).join("")}</div></div>`;
+   }
+   const u=sp.g[cs.gr]||[],st=csStat(sp.id,cs.gr),sel=cs.sel[sp.id+cs.gr]||[];
+   const rows=u.map((x,k)=>`<div class="cu"><div class="cut">${x[0]}</div><span class="chr">${st.h[k]} ساعة</span>
+    <div class="cb4" role="group" aria-label="تقدير ${x[0]}">${["U","P","M","D"].map(L=>`<button type="button" class="cb ${L}${sel[k]===L?" on":""}" data-cu="${k}|${L}" aria-pressed="${sel[k]===L}">${L}</button>`).join("")}</div></div>`).join("");
+   return `<div class="cs"><div class="cs-top"><h3>${sp.i} ${sp.n}</h3><button type="button" class="btn" data-cback="spec">تغيير التخصص</button></div>
+   <div class="gtabs">${[11,12].map(g=>`<button type="button" class="${g===cs.gr?"on":""}" data-cg="${g}">${CGN[g]}</button>`).join("")}</div>
+   <div class="cs-sub"><span>مواد التخصص <b>(${st.tot} ساعة إجمالي)</b></span><span id="csCnt"><b>${st.done}/${st.n} مادة</b></span></div>
+   ${rows||`<div class="card">✨ ستضاف الوحدات لاحقًا</div>`}
+   <div class="csres" id="csRes" aria-live="polite">${csResHTML()}</div>
+   <div class="cs-leg"><span>U = غير مصنف (${CP.U}%)</span><span>P = Pass (${CP.P}%)</span><span>M = Merit (${CP.M}%)</span><span>D = Distinction (${CP.D}%)</span></div>
+   <p class="note">المعدل = متوسط التقديرات مرجَّحًا بعدد ساعات كل مادة × ${CMAX}. تقدير فقط، والعلامة الرسمية تحددها الوزارة وPearson.</p>
+   <button type="button" class="btn" data-crs style="margin-top:6px">↺ بدء جديد</button></div>`;
+  },
   faq(){return FAQ.map(f=>`<details><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join("")},
   mist(){return `<div class="card"><b>أخطاء شائعة عند الطلاب:</b><ul class="skills" style="margin-top:8px">${li(GM)}</ul></div>
    <h3 class="bgsub">أخطاء خاصة بكل وحدة</h3><div class="bgrid">${Object.keys(M).map(k=>`<div class="card"><b>${k}</b><p class="gdesc" style="margin:6px 0 0">⚠️ ${M[k]}</p></div>`).join("")}</div>`},
@@ -5187,8 +5263,18 @@ html[data-a11y-hc] #aiFab .ai-name{background:#000!important;color:#ffe600!impor
  const body=$("bgBody"),tabs=$("bgTabs");
  tabs.addEventListener("click",e=>{const b=e.target.closest("[data-bgp]");if(!b)return;pane=b.dataset.bgp;if(pane==="specs")spec=null;render()});
  body.addEventListener("click",e=>{
-  let t;
-  if(t=e.target.closest("[data-bgs]")){spec=t.dataset.bgs;gr=10;assOpen=false;render();window.scrollTo(0,0);return}
+   let t;
+   if(t=e.target.closest("[data-cs]")){cs.spec=t.dataset.cs;cs.gr=null;csSave();render();return}
+   if(t=e.target.closest("[data-cg]")){cs.gr=+t.dataset.cg;csSave();render();return}
+   if(e.target.closest("[data-cback]")){cs.spec=null;cs.gr=null;csSave();render();return}
+   if(e.target.closest("[data-crs]")){delete cs.sel[cs.spec+cs.gr];csSave();render();return}
+   if(t=e.target.closest("[data-cu]")){
+    const a=t.dataset.cu.split("|"),k=+a[0],L=a[1],key=cs.spec+cs.gr,sel=cs.sel[key]||(cs.sel[key]=[]);
+    sel[k]=sel[k]===L?null:L;csSave();
+    t.parentNode.querySelectorAll(".cb").forEach(b=>{const on=sel[k]===b.dataset.cu.split("|")[1];b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
+    csUpdate();return;
+   }
+   if(t=e.target.closest("[data-bgs]")){spec=t.dataset.bgs;gr=10;assOpen=false;render();window.scrollTo(0,0);return}
   if(e.target.closest("[data-bgass]")){assOpen=!assOpen;render();return}
   if(t=e.target.closest("[data-bgg]")){gr=+t.dataset.bgg;render();return}
   if(e.target.closest("[data-bgback]")){spec=null;assOpen=false;render();return}
